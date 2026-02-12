@@ -1,90 +1,133 @@
-# 🗳️ CampusVote AI: Bio-Secure Blockchain Voting
+# 🗳️ CampusVote AI: Secure & Private Blockchain Voting
 
-### 🏆 Hackspiration '26 Project Submission
-**Tracks:** Blockchain (Algorand), AI/ML, Verified Compute
-
-> A next-generation decentralized voting system that combines **AI Face Liveness Detection** and **Biometric Fingerprint Security** with the **Algorand Blockchain** for trusted campus elections.
-
----
-
-## 🚀 Key Features (Why we built this)
-
-1.  **🤖 AI Face Verification ("Bio-Secure AI Guard")**:
-    *   Prevents proxy voting using `face-api.js` for real-time liveness detection.
-    *   Ensures only a physical human is present before unlocking the ballot, adding a critical security layer.
-
-2.  **⛓️ Algorand Smart Contract**:
-    *   Core voting logic migrated to **PyTeal** (Algorand Python SDK) for high-speed, finality-guaranteed voting.
-    *   Uses **Box Storage** to track unique voter nullifiers efficiently.
-
-3.  **👆 Dual-Factor Authentication**:
-    *   Requires both **Face ID** (AI) AND **Fingerprint** (Hardware) to cast a vote.
+> **Hackspiration '26 Submission** | **Track:** Blockchain (Algorand)
+>
+> A privacy-preserving, professional-grade electronic voting system designed for university campuses. It combines **Biometric Hardware Security** with the **Algorand Blockchain** using a novel "Ephemeral Token" protocol to ensure true ballot secrecy.
 
 ---
 
-## 🛠️ Instructions for Judges (How to Run)
+## 🚀 Key Innovations
 
-We have created a **One-Click Script** to launch the entire demo environment.
+### 1. 🕵️‍♂️ True Privacy via Ephemeral Tokens
+Unlike standard blockchain voting where a user's address is linked to their vote, our system uses a **Token Dispenser Model**:
+*   **Authentication**: User proves identity via **Fingerprint Sensor** (off-chain).
+*   **Authorization**: Backend checks eligibility and issues a **One-Time-Use Algorand Account** funded with **1 Vote Token** (or Algo).
+*   **Voting**: The browser signs the vote with this temporary key. The blockchain sees `Temp_Account -> Candidate`, making the vote mathematically untraceable to the Student ID.
+
+### 2. 🔄 Hardware Resilience (The "Hot-Swap" Protocol)
+We solved the "Broken Sensor" problem common in hardware projects:
+*   **Central Trust**: Fingerprint templates are stored *encrypted* in the central backend, not just on the sensor.
+*   **Sync**: If Sensor A breaks, the Admin connects Sensor B and triggers a `sync_templates` command which restores all registered users to the new hardware instantly. No re-registration needed.
+
+### 3. ⚡ High-Speed Algorand Finality
+*   Built on **Algorand** for <4s finality and negligible transaction costs.
+*   Uses **Algosdk** directly in the browser—no MetaMask or wallet plugins required for the voter.
+
+---
+
+## 🛠️ System Architecture
+
+```mermaid
+graph TD
+    User((User)) -->|Fingerprint Scan| Sensor[R307/R305 Sensor]
+    Sensor -->|Raw Template| Backend[Node.js Authority]
+    Backend -->|Check Membership| DB[(Secure Database)]
+    
+    subgraph "Privacy Layer"
+        Backend -->|Issue Ephemeral Key| Frontend[Web Client]
+        Frontend -->|Sign Vote (locally)| Algorand[Algorand Network]
+    end
+    
+    Algorand -->|Immutable Record| Ledger[(Blockchain)]
+```
+
+---
+
+## � Technology Stack
+
+*   **Blockchain**: Algorand (SDK v2), PyTeal Smart Contracts.
+*   **Hardware**: Arduino/Serial Bridge, R307/R305 Optical Fingerprint Sensor.
+*   **Backend**: Node.js, Express, WebSocket (Real-time hardware bridge).
+*   **Frontend**: HTML5, CSS3 (Glassmorphism), Vanilla JS (No heavy frameworks).
+
+---
+
+## 🚀 Quick Start Guide
 
 ### Prerequisites
-*   Node.js (v16+)
-*   Python (3.x)
+1.  **Node.js** (v16+)
+2.  **Arduino/Fingerprint Sensor** (Optional - Simulation Mode available)
 
-### 1️⃣ Quick Start (Recommended)
-Simply run the included batch script in the root directory:
+### 1. Configure Environment
+Create a `.env` file in the root directory (or use the provided defaults):
+
+```env
+# Algorand Config (Testnet or Sandbox)
+ALGOD_TOKEN=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+ALGOD_SERVER=http://localhost
+ALGOD_PORT=4001
+
+# Admin Account (Must have Algos to fund voters)
+ADMIN_MNEMONIC=your 25 word mnemonic phrase goes here
+```
+
+### 2. Install Dependencies
+```bash
+# Install root/backend dependencies
+npm install
+
+# Install backend specific (if not recursive)
+cd backend && npm install && cd ..
+```
+
+### 3. Run the System
+We provide a one-click startup script:
 
 ```powershell
+# Windows
 .\run_hackathon.bat
 ```
 
-This script will automatically:
-1.  Install necessary Python dependencies (`pyteal`, `py-algorand-sdk`).
-2.  Compile the Algorand Smart Contract (`vote_approval.teal`).
-3.  Launch the **Backend API** (Fingerprint Server).
-4.  Launch the **Frontend Web App** (AI Interface).
-5.  Open your browser to the voting page.
+*   **Frontend**: http://localhost:8080
+*   **Backend**: http://localhost:3001
 
-### 2️⃣ Manual Setup (If script fails)
-If you prefer manual control:
+---
 
-**Backend:**
-```bash
-cd backend
-npm install
-node server.js
-```
+## 🧪 How to Demo (Judge's Guide)
 
-**Frontend:**
-```bash
-# In a new terminal
-npx http-server frontend -p 8000
-```
+### Scenario A: With Hardware (Fingerprint Sensor)
+1.  Connect the R305/R307 sensor via USB-TTL.
+2.  Run the backend. It will auto-detect the COM port.
+3.  Go to **Frontend**. Click **"Scan Fingerprint"**.
+4.  Place finger on sensor.
+5.  **Backend** verifies -> **Frontend** receives "Ephemeral Key".
+6.  User selects candidate -> Signs Vote -> **Blockchain Confirmed**.
 
-**Smart Contract (Algorand):**
-```bash
-cd algorand
-pip install -r requirements.txt
-python voting.py
-# Use deploy.py to deploy to Testnet if needed
-```
+### Scenario B: Without Hardware (Simulation Mode)
+1.  Open the **Frontend**.
+2.  Open Browser Console (`F12`).
+3.  We have a simulation endpoint. Click "Scan", then verify the backend logs to see the mock flow:
+    *   *The system will simulate a valid fingerprint match if hardware is missing but simulation is enabled in `server.js`.*
 
 ---
 
 ## 📂 Project Structure
 
-*   `/frontend`: The AI-powered web interface (HTML/JS/CSS).
-    *   `/js/ai-auth.js`: The core logic for Face Liveness Detection.
-*   `/algorand`: The Python Smart Contracts for Algorand.
-    *   `voting.py`: The main PyTeal contract logic.
-*   `/backend`: Node.js server handling fingerprint hardware communication.
-*   `/contracts`: Legacy Ethereum contracts (for reference).
+*   `/frontend`: The Voter Interface (Voting, Dashboard, Receipt).
+    *   `js/algorand-manager.js`: Handles `algosdk` interactions.
+    *   `js/auth.js`: WebSocket bridge to Arduino.
+*   `/backend`: The Central Authority & Hardware Bridge.
+    *   `server.js`: Concept of Operations (Identity -> Ephemeral Key).
+*   `/algorand`: Smart Contracts (PyTeal).
 
 ---
 
-## 🔗 Live Demo / Video
-[Insert Link Here if applicable]
+## �️ Security & Privacy Checklist
+*   [x] **No Raw Biometrics**: Only encrypted templates stored.
+*   [x] **Linkability Broken**: Admin sees "User Voted", Blockchain sees "Anonymous Key Voted".
+*   [x] **Double Voting**: Prevented by Backend State + Blockchain Nullifiers.
+*   [x] **Replay Attacks**: Nonce-based backend authentication.
 
 ---
 
-**Team:** Metaminds
-**Hackathon:** Hackspiration '26
+**Team Metaminds** 
