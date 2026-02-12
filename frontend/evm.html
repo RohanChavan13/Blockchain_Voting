@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVM Simulator - Electronic Voting Machine</title>
+    <link rel="stylesheet" href="css/evm-styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="evm-container">
+        <!-- EVM Simulator Text -->
+        <div class="evm-simulator-text">
+            <span>EVM SIMULATOR</span>
+        </div>
+        
+        <!-- Main EVM Unit -->
+        <div class="evm-unit">
+            <!-- Header Section -->
+            <div class="evm-header">
+                <div class="unit-number">NS60205</div>
+                <div class="barcode">||||||||||||</div>
+                <div class="status-section">
+                    <span class="ready-text">Ready</span>
+                    <div class="status-light ready"></div>
+                </div>
+                <div class="ballot-unit">
+                    <div class="hindi-text">बैलट यूनिट</div>
+                    <div class="english-text">Ballot Unit</div>
+                    <div class="unit-icon">📦</div>
+                </div>
+            </div>
+            
+            <!-- Candidates Table -->
+            <div class="candidates-table">
+                <div class="table-header">
+                    <div class="col-sno">S.No.</div>
+                    <div class="col-name">Name</div>
+                    <div class="col-symbol">Symbol</div>
+                </div>
+                
+                <div class="candidate-row" data-candidate="1">
+                    <div class="col-sno">1</div>
+                    <div class="col-name">Candidate-1</div>
+                    <div class="col-symbol">α</div>
+                </div>
+                
+                <div class="candidate-row" data-candidate="2">
+                    <div class="col-sno">2</div>
+                    <div class="col-name">Candidate-2</div>
+                    <div class="col-symbol">β</div>
+                </div>
+                
+                <div class="candidate-row" data-candidate="3">
+                    <div class="col-sno">3</div>
+                    <div class="col-name">Candidate-3</div>
+                    <div class="col-symbol">γ</div>
+                </div>
+                
+                <div class="candidate-row" data-candidate="4">
+                    <div class="col-sno">4</div>
+                    <div class="col-name">Candidate-4</div>
+                    <div class="col-symbol">δ</div>
+                </div>
+                
+                <div class="candidate-row" data-candidate="5">
+                    <div class="col-sno">5</div>
+                    <div class="col-name">Candidate-5</div>
+                    <div class="col-symbol">ε</div>
+                </div>
+            </div>
+            
+            <!-- Voting Buttons Section -->
+            <div class="voting-buttons">
+                <div class="button-row" data-candidate="1">
+                    <div class="red-light"></div>
+                    <button class="vote-button" data-candidate="1"></button>
+                </div>
+                
+                <div class="button-row" data-candidate="2">
+                    <div class="red-light"></div>
+                    <button class="vote-button" data-candidate="2"></button>
+                </div>
+                
+                <div class="button-row" data-candidate="3">
+                    <div class="red-light"></div>
+                    <button class="vote-button" data-candidate="3"></button>
+                </div>
+                
+                <div class="button-row" data-candidate="4">
+                    <div class="red-light"></div>
+                    <button class="vote-button" data-candidate="4"></button>
+                </div>
+                
+                <div class="button-row" data-candidate="5">
+                    <div class="red-light"></div>
+                    <button class="vote-button" data-candidate="5"></button>
+                </div>
+                
+                <div class="button-row empty">
+                    <div class="red-light"></div>
+                    <button class="vote-button disabled"></button>
+                </div>
+                
+                <div class="button-row empty">
+                    <div class="red-light"></div>
+                    <button class="vote-button disabled"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Audio for beep sound -->
+    <audio id="beepSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT" type="audio/wav">
+    </audio>
+    
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Confirm Your Vote</h2>
+            <div class="confirm-details">
+                <p>You have selected:</p>
+                <div class="selected-candidate">
+                    <span id="selectedCandidateName"></span>
+                    <span id="selectedCandidateSymbol"></span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="cancelVote" class="btn btn-secondary">Cancel</button>
+                <button id="confirmVote" class="btn btn-primary">Confirm Vote</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Success Modal -->
+    <div id="successModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="success-icon">✅</div>
+            <h2>Vote Cast Successfully!</h2>
+            <p>Your vote has been recorded on the blockchain</p>
+            <div class="success-details">
+                <div class="detail-row">
+                    <span class="label">Transaction:</span>
+                    <a id="successTxLink" href="#" target="_blank" class="value"></a>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Block:</span>
+                    <span id="blockNumber" class="value"></span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="backToHome" class="btn btn-primary">Back to Home</button>
+                <button id="viewDashboard" class="btn btn-secondary">View Results</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+    <script src="js/config.js?v=3"></script>
+    <script src="js/web3.js?v=3"></script>
+    <script src="js/auth.js?v=3"></script>
+    <script src="js/evm.js?v=4"></script>
+</body>
+</html>

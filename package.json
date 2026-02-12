@@ -1,0 +1,30 @@
+{
+  "name": "blockchain-voting-system",
+  "version": "1.0.0",
+  "description": "Blockchain-based voting verification system with Merkle trie hash fusion on Sepolia testnet",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy": "hardhat run scripts/deploy.js --network sepolia"
+  },
+  "keywords": [
+    "blockchain",
+    "voting",
+    "ethereum",
+    "sepolia",
+    "merkle-tree"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "dotenv": "^17.2.3",
+    "hardhat": "^2.26.3"
+  },
+  "dependencies": {
+    "@serialport/parser-readline": "^13.0.0",
+    "axios": "^1.13.2",
+    "node-fetch": "^3.3.2",
+    "serialport": "^13.0.0"
+  }
+}

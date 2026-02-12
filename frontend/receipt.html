@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vote Receipt - Blockchain Voting</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📄 Vote Receipt</h1>
+            <p class="subtitle">Your vote has been recorded on the blockchain</p>
+        </header>
+
+        <main class="receipt-container">
+            <div class="receipt-card glass">
+                <div class="receipt-header">
+                    <div class="success-icon">✅</div>
+                    <h2>Vote Successfully Cast</h2>
+                    <p class="receipt-date" id="receiptDate"></p>
+                </div>
+
+                <div class="receipt-details">
+                    <div class="detail-section">
+                        <h3>Transaction Details</h3>
+                        <div class="detail-row">
+                            <span class="label">Transaction Hash:</span>
+                            <a id="txHashLink" href="#" target="_blank" class="value mono"></a>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Block Number:</span>
+                            <span id="blockNum" class="value"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Network:</span>
+                            <span class="value">Sepolia Testnet</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Vote Information</h3>
+                        <div class="detail-row">
+                            <span class="label">Candidate:</span>
+                            <span id="candidateName" class="value"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Timestamp:</span>
+                            <span id="voteTime" class="value"></span>
+                        </div>
+                    </div>
+
+                    <div class="verification-section">
+                        <h3>Verification</h3>
+                        <p>Your vote is permanently recorded on the Sepolia blockchain and can be verified at any time.</p>
+                        <div class="verification-links">
+                            <a id="etherscanBtn" href="#" target="_blank" class="btn btn-primary">
+                                View on Etherscan →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="receipt-actions">
+                    <button id="printReceipt" class="btn btn-secondary">🖨️ Print Receipt</button>
+                    <button id="backToDashboard" class="btn btn-primary">View Dashboard</button>
+                </div>
+            </div>
+
+            <div class="info-box glass">
+                <h3>ℹ️ Important Information</h3>
+                <ul>
+                    <li>This receipt confirms your vote was recorded on the blockchain</li>
+                    <li>Your vote is anonymous - the candidate choice is not linked to your identity</li>
+                    <li>You can verify this transaction on Etherscan using the transaction hash</li>
+                    <li>Save this receipt for your records</li>
+                </ul>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p><a href="index.html">← Back to Home</a> | <a href="dashboard.html">View Dashboard</a></p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/web3.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Load receipt data
+        document.addEventListener('DOMContentLoaded', () => {
+            const receiptData = sessionStorage.getItem('voteReceipt');
+            
+            if (!receiptData) {
+                alert('No receipt found');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const receipt = JSON.parse(receiptData);
+            
+            // Display receipt details
+            document.getElementById('receiptDate').textContent = new Date(receipt.timestamp).toLocaleString();
+            document.getElementById('txHashLink').href = web3Manager.getEtherscanLink(receipt.txHash);
+            document.getElementById('txHashLink').textContent = authManager.truncateHash(receipt.txHash, 12, 10);
+            document.getElementById('blockNum').textContent = receipt.blockNumber;
+            document.getElementById('candidateName').textContent = receipt.candidateName;
+            document.getElementById('voteTime').textContent = new Date(receipt.timestamp).toLocaleString();
+            document.getElementById('etherscanBtn').href = web3Manager.getEtherscanLink(receipt.txHash);
+        });
+
+        // Print receipt
+        document.getElementById('printReceipt').addEventListener('click', () => {
+            window.print();
+        });
+
+        // Back to dashboard
+        document.getElementById('backToDashboard').addEventListener('click', () => {
+            window.location.href = 'dashboard.html';
+        });
+    </script>
+
+    <style>
+        .receipt-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .receipt-card {
+            padding: var(--space-2xl);
+            margin-bottom: var(--space-xl);
+        }
+
+        .receipt-header {
+            text-align: center;
+            padding-bottom: var(--space-xl);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: var(--space-xl);
+        }
+
+        .receipt-date {
+            color: var(--text-muted);
+            margin-top: var(--space-sm);
+        }
+
+        .receipt-details {
+            margin: var(--space-xl) 0;
+        }
+
+        .detail-section {
+            margin-bottom: var(--space-xl);
+            padding-bottom: var(--space-xl);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detail-section:last-child {
+            border-bottom: none;
+        }
+
+        .detail-section h3 {
+            margin-bottom: var(--space-md);
+            color: var(--primary);
+        }
+
+        .verification-section p {
+            color: var(--text-muted);
+            margin-bottom: var(--space-lg);
+        }
+
+        .verification-links {
+            display: flex;
+            justify-content: center;
+        }
+
+        .receipt-actions {
+            display: flex;
+            gap: var(--space-md);
+            justify-content: center;
+            margin-top: var(--space-xl);
+            padding-top: var(--space-xl);
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-box {
+            padding: var(--space-xl);
+        }
+
+        .info-box h3 {
+            margin-bottom: var(--space-md);
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-box li {
+            padding: var(--space-sm) 0;
+            padding-left: var(--space-lg);
+            position: relative;
+        }
+
+        .info-box li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+        }
+
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+
+            .glass {
+                background: white;
+                border: 1px solid #ccc;
+            }
+
+            .receipt-actions,
+            .footer,
+            .info-box {
+                display: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .receipt-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</body>
+</html>

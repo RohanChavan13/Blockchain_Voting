@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Voting - Live Results</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📊 Live Voting Results</h1>
+            <div class="header-actions">
+                <button id="refreshButton" class="btn btn-small">🔄 Refresh</button>
+                <span class="last-update">Last updated: <span id="lastUpdateTime">--</span></span>
+            </div>
+        </header>
+
+        <main class="dashboard-container">
+            <div class="stats-overview">
+                <div class="stat-card glass">
+                    <div class="stat-icon">🗳️</div>
+                    <div class="stat-content">
+                        <h3 id="totalVotes">0</h3>
+                        <p>Total Votes</p>
+                    </div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-content">
+                        <h3 id="totalVoters">0</h3>
+                        <p>Registered Voters</p>
+                    </div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-content">
+                        <h3 id="turnoutPercent">0%</h3>
+                        <p>Turnout</p>
+                    </div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-icon">⛓️</div>
+                    <div class="stat-content">
+                        <h3 id="blockchainStatus">●</h3>
+                        <p>Blockchain</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <div class="results-table glass">
+                    <h2>Candidate Results</h2>
+                    <table id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Candidate</th>
+                                <th>Party</th>
+                                <th>Votes</th>
+                                <th>Percentage</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                            <!-- Results will be dynamically inserted -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="charts-section">
+                    <div class="chart-card glass">
+                        <h3>Vote Distribution</h3>
+                        <canvas id="barChart"></canvas>
+                    </div>
+                    <div class="chart-card glass">
+                        <h3>Vote Share</h3>
+                        <canvas id="donutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="blockchain-info glass">
+                <h3>Blockchain Information</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="label">Contract Address:</span>
+                        <a id="contractLink" href="#" target="_blank" class="value mono"></a>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Network:</span>
+                        <span class="value">Sepolia Testnet</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Current Block:</span>
+                        <span id="currentBlock" class="value">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Merkle Root:</span>
+                        <span id="merkleRoot" class="value mono">--</span>
+                    </div>
+                </div>
+                <div class="blockchain-actions">
+                    <a id="etherscanLink" href="#" target="_blank" class="btn btn-secondary">
+                        View on Etherscan →
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p><a href="index.html">← Back to Home</a> | <a href="voting.html">Cast Vote</a></p>
+            <p class="auto-refresh">Auto-refreshing every 30 seconds</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/web3.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

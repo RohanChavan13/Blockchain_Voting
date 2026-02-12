@@ -1,0 +1,15 @@
+{
+  "name": "arduino-bridge",
+  "version": "1.0.0",
+  "description": "Arduino Serial Bridge for Blockchain Voting",
+  "main": "arduino_bridge.js",
+  "scripts": {
+    "start": "node arduino_bridge.js",
+    "install-deps": "npm install serialport @serialport/parser-readline node-fetch"
+  },
+  "dependencies": {
+    "serialport": "^12.0.0",
+    "@serialport/parser-readline": "^12.0.0",
+    "node-fetch": "^2.6.7"
+  }
+}

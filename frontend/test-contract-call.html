@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contract Call Test</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+</head>
+<body>
+    <h1>Contract Call Test</h1>
+    <button onclick="testContractCall()">Test Contract Call</button>
+    <div id="output"></div>
+
+    <script>
+        async function testContractCall() {
+            const output = document.getElementById('output');
+            output.innerHTML = 'Testing...';
+            
+            try {
+                // Contract details
+                const contractAddress = "0x7059c2D1e46581cc5F35F0c34bd5F5B744e62DEC";
+                const abi = [
+                    "function merkleRoot() view returns (bytes32)",
+                    "function candidateCount() view returns (uint256)",
+                    "function nullifierUsed(bytes32) view returns (bool)",
+                    "function vote(uint256 candidateId, bytes32 nullifierHash, bytes32 leaf, bytes32[] proof)"
+                ];
+                
+                // Connect to MetaMask
+                if (!window.ethereum) {
+                    throw new Error('MetaMask not found');
+                }
+                
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                const signer = provider.getSigner();
+                
+                // Create contract instance
+                const contract = new ethers.Contract(contractAddress, abi, signer);
+                
+                // Test read functions first
+                const merkleRoot = await contract.merkleRoot();
+                const candidateCount = await contract.candidateCount();
+                
+                output.innerHTML += `<br>Merkle root: ${merkleRoot}`;
+                output.innerHTML += `<br>Candidate count: ${candidateCount}`;
+                
+                // Test parameters
+                const candidateId = 2;
+                const nullifier = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("test-" + Date.now()));
+                const leaf = "0x" + "0".repeat(64);
+                const proof = [];
+                
+                output.innerHTML += `<br>Test params: ${candidateId}, ${nullifier.slice(0,10)}...`;
+                
+                // Try to estimate gas
+                const gasEstimate = await contract.estimateGas.vote(candidateId, nullifier, leaf, proof);
+                output.innerHTML += `<br>Gas estimate: ${gasEstimate}`;
+                
+                // Encode function data
+                const txData = contract.interface.encodeFunctionData('vote', [candidateId, nullifier, leaf, proof]);
+                output.innerHTML += `<br>TX data: ${txData.slice(0,20)}...`;
+                
+                output.innerHTML += `<br>✅ Contract call preparation successful!`;
+                
+            } catch (error) {
+                output.innerHTML += `<br>❌ Error: ${error.message}`;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

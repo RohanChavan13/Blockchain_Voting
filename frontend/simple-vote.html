@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Vote Test</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🗳️ Simple Vote Test</h1>
+            <p>Direct voting without authentication</p>
+        </header>
+
+        <main class="voting-container">
+            <div class="instructions glass">
+                <h2>Test Voting</h2>
+                <button id="connectBtn" class="btn btn-primary">Connect MetaMask</button>
+                <p id="status"></p>
+            </div>
+
+            <div id="candidatesSection" class="hidden">
+                <h3>Select Candidate:</h3>
+                <button class="btn btn-secondary" onclick="voteFor(1)">Vote for Candidate A</button>
+                <button class="btn btn-secondary" onclick="voteFor(2)">Vote for Candidate B</button>
+                <button class="btn btn-secondary" onclick="voteFor(3)">Vote for Candidate C</button>
+                <button class="btn btn-secondary" onclick="voteFor(4)">Vote for Candidate D</button>
+                <button class="btn btn-secondary" onclick="voteFor(5)">Vote for Candidate E</button>
+            </div>
+
+            <div id="result"></div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+    <script src="js/config.js"></script>
+    <script>
+        let provider, signer, contract;
+
+        document.getElementById('connectBtn').addEventListener('click', async () => {
+            try {
+                document.getElementById('status').textContent = 'Connecting...';
+                
+                if (!window.ethereum) {
+                    alert('MetaMask not installed!');
+                    return;
+                }
+
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                provider = new ethers.BrowserProvider(window.ethereum);
+                signer = await provider.getSigner();
+                
+                contract = new ethers.Contract(
+                    CONFIG.CONTRACT_ADDRESS,
+                    CONFIG.CONTRACT_ABI,
+                    signer
+                );
+
+                document.getElementById('status').textContent = 'Connected! Address: ' + await signer.getAddress();
+                document.getElementById('candidatesSection').classList.remove('hidden');
+            } catch (error) {
+                document.getElementById('status').textContent = 'Error: ' + error.message;
+            }
+        });
+
+        async function voteFor(candidateId) {
+            try {
+                document.getElementById('result').textContent = 'Submitting vote...';
+                
+                // Generate mock voter data
+                const mockVoter = ethers.hexlify(ethers.randomBytes(32));
+                const nullifier = ethers.keccak256(ethers.toUtf8Bytes(mockVoter + '|null'));
+                const leaf = ethers.keccak256(ethers.toUtf8Bytes(mockVoter));
+                
+                // Empty proof for testing (will fail but shows connection works)
+                const proof = [];
+                
+                const tx = await contract.vote(candidateId, nullifier, leaf, proof, {
+                    gasLimit: 300000
+                });
+                
+                document.getElementById('result').textContent = 'Transaction sent: ' + tx.hash;
+                
+                await tx.wait();
+                document.getElementById('result').textContent = 'Vote recorded! TX: ' + tx.hash;
+                
+            } catch (error) {
+                document.getElementById('result').textContent = 'Error: ' + error.message;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

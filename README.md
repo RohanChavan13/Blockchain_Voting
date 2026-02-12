@@ -86,5 +86,5 @@ python voting.py
 
 ---
 
-**Team:** [Your Team Name]
+**Team:** Metaminds
 **Hackathon:** Hackspiration '26

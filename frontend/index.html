@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusVote AI - Secure Blockchain Voting</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗳️</text></svg>">
+    <link rel="stylesheet" href="css/evm-auth-styles.css">
+    <meta name="theme-color" content="#d7efe9">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+    <style>
+        /* Landing hero styles matching reference */
+        .landing {
+            max-width: 1150px;
+            margin: 2.2rem auto 1.25rem;
+            text-align: center;
+            padding: 1.25rem 1rem;
+            position: relative;
+        }
+
+        .landing::before {
+            content: '';
+            position: absolute;
+            inset: -40px 0 0 0;
+            z-index: -1;
+            background:
+                radial-gradient(60rem 60rem at 50% -10%, rgba(45, 212, 191, .22), transparent 60%),
+                radial-gradient(40rem 40rem at 80% 10%, rgba(16, 185, 129, .2), transparent 60%);
+            filter: blur(0.5px);
+        }
+
+        .landing-bg {
+            position: absolute;
+            inset: -60px -20px -20px -20px;
+            z-index: -2;
+            pointer-events: none;
+            background: radial-gradient(40rem 30rem at 50% 10%, rgba(45, 212, 191, .14), transparent 60%), radial-gradient(30rem 30rem at 20% 0%, rgba(16, 185, 129, .12), transparent 55%);
+        }
+
+        .landing h1 {
+            font-size: clamp(2.4rem, 6vw, 3.8rem);
+            font-weight: 900;
+            color: #0f3f3a;
+            letter-spacing: .3px;
+            margin-bottom: .35rem;
+        }
+
+        .landing .sub {
+            font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+            color: #5aa7a1;
+            opacity: .95;
+            margin-top: .1rem;
+            margin-bottom: .35rem;
+        }
+
+        .landing p {
+            color: #6c8793;
+            max-width: 820px;
+            margin: .65rem auto 1.25rem;
+            line-height: 1.7;
+        }
+
+        .landing .cta {
+            display: inline-flex;
+            align-items: center;
+            gap: .6rem;
+            padding: .95rem 1.4rem;
+            border: 0;
+            border-radius: 14px;
+            cursor: pointer;
+            color: #fff;
+            font-weight: 800;
+            letter-spacing: .2px;
+            background: linear-gradient(135deg, #2dd4bf, #10b981);
+            box-shadow: 0 10px 26px rgba(16, 185, 129, .35);
+            transition: transform .2s ease, box-shadow .25s ease, filter .25s ease;
+            will-change: transform;
+        }
+
+        .landing .cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 34px rgba(16, 185, 129, .45);
+            filter: brightness(1.02);
+        }
+
+        .scroll-hint {
+            margin-top: .9rem;
+            color: #5b7282;
+            font-weight: 600;
+            opacity: .9;
+            display: flex;
+            gap: .4rem;
+            justify-content: center;
+            align-items: center;
+            font-size: .95rem;
+        }
+
+        .scroll-hint .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #a7f3d0;
+            box-shadow: 0 0 10px rgba(167, 243, 208, .8);
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .4
+            }
+        }
+
+        .cards {
+            max-width: 1150px;
+            margin: 1.75rem auto 2.25rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 1.25rem;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background: #ffffffea;
+            border-radius: 18px;
+            padding: 1.6rem;
+            box-shadow: 0 12px 32px rgba(2, 6, 23, .12);
+            border: 1px solid rgba(15, 23, 42, .08);
+            transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 52px rgba(2, 6, 23, .2);
+            filter: saturate(1.02);
+        }
+
+        .card .imgwrap {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1rem;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 16px 28px rgba(45, 212, 191, .28);
+        }
+
+        .card h3 {
+            text-align: center;
+            font-weight: 800;
+            color: #0f3f3a;
+            font-size: 1.25rem;
+            margin: .35rem 0 .25rem;
+        }
+
+        .card p {
+            text-align: center;
+            color: #5b7282;
+            line-height: 1.65;
+        }
+
+        /* Trust indicators */
+        .trust {
+            max-width: 900px;
+            margin: 0 auto 3rem;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .trust .row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            font-size: .95rem;
+            margin-bottom: .35rem;
+        }
+
+        .trust .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #34d399;
+            box-shadow: 0 0 10px rgba(52, 211, 153, .7);
+            animation: pulse 1.8s infinite;
+        }
+
+        .trust .meta {
+            font-size: .85rem;
+            opacity: .9;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1
+            }
+
+            50% {
+                transform: scale(1.15);
+                opacity: .6
+            }
+        }
+
+        /* Simple entrance animations to mimic framer-motion */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(16px);
+            animation: fadeUp .6s ease forwards;
+        }
+
+        .fade-up.delay-1 {
+            animation-delay: .15s
+        }
+
+        .fade-up.delay-2 {
+            animation-delay: .3s
+        }
+
+        .fade-up.delay-3 {
+            animation-delay: .45s
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @media (max-width:640px) {
+            .landing {
+                margin: 1.2rem auto .75rem;
+            }
+        }
+
+        /* EVM Machine Container - Hidden initially */
+        .evm-machine-container {
+            display: none !important;
+        }
+
+        /* Force hide initially */
+        .evm-machine-container.active {
+            display: flex !important;
+        }
+
+        /* Video Container for AI Auth */
+        #video-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto 1.5rem;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 3px solid var(--evm-green-light);
+            position: relative;
+            background: #000;
+            display: none;
+            /* Initially hidden until AI button clicked */
+        }
+
+        #webcam {
+            width: 100%;
+            height: auto;
+            transform: scaleX(-1);
+            /* Mirror effect */
+            display: block;
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ai-status {
+            text-align: center;
+            font-weight: 600;
+            color: var(--evm-green-light);
+            margin-top: 0.5rem;
+            min-height: 1.5em;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Landing hero and features (visual only; backend unchanged) -->
+    <section class="landing fade-up">
+        <div class="landing-bg"></div>
+        <h1>CampusVote AI</h1>
+        <div class="sub">Bio-Secure Blockchain Voting System</div>
+        <p>Secure, transparent, and AI-verified voting for the next generation of campus elections. Powered by Algorand
+            technology.</p>
+
+        <!-- FIXED BUTTON ONCLICK -->
+        <button class="cta" type="button" onclick="startVotingFlow()">Start Secure Vote →</button>
+
+        <div class="scroll-hint"><span class="dot"></span> Scroll to authenticate</div>
+    </section>
+    <section class="cards">
+        <div class="card fade-up delay-1">
+            <div class="imgwrap">
+                <img alt="AI Verification" style="width:100%;height:100%;object-fit:cover"
+                    src="data:image/svg+xml;utf8,<?xml version='1.0' encoding='UTF-8'?><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'><defs><linearGradient id='gai' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='%236366f1'/><stop offset='100%' stop-color='%23a855f7'/></linearGradient></defs><rect width='300' height='300' rx='28' fill='url(%23gai)'/><circle cx='150' cy='150' r='60' fill='rgba(255,255,255,.2)'/><path d='M110 130 h80 M110 170 h80' stroke='%23fff' stroke-width='8' stroke-linecap='round'/><rect x='90' y='90' width='120' height='120' rx='20' stroke='%23fff' stroke-width='6' fill='none'/></svg>" />
+            </div>
+            <h3>AI-Powered Security</h3>
+            <p>Facial liveness detection ensures only real students can access the ballot.</p>
+        </div>
+        <div class="card fade-up delay-2">
+            <div class="imgwrap">
+                <img alt="Fingerprint Auth" style="width:100%;height:100%;object-fit:cover"
+                    src="data:image/svg+xml;utf8,<?xml version='1.0' encoding='UTF-8'?><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'><defs><linearGradient id='g2' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='%230ea5e9'/><stop offset='100%' stop-color='%2314b8a6'/></linearGradient></defs><rect width='300' height='300' rx='28' fill='url(%23g2)'/><rect x='50' y='80' width='200' height='140' rx='18' fill='rgba(255,255,255,.18)'/><circle cx='110' cy='150' r='28' fill='rgba(255,255,255,.9)'/><circle cx='150' cy='150' r='28' fill='rgba(255,255,255,.8)'/><circle cx='190' cy='150' r='28' fill='rgba(255,255,255,.7)'/></svg>" />
+            </div>
+            <h3>Biometric Lock</h3>
+            <p>Dual-layer authentication with fingerprint scanning verification.</p>
+        </div>
+        <div class="card fade-up delay-3">
+            <div class="imgwrap">
+                <img alt="Algorand Ready" style="width:100%;height:100%;object-fit:cover"
+                    src="data:image/svg+xml;utf8,<?xml version='1.0' encoding='UTF-8'?><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'><defs><linearGradient id='g3' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='%2306b6d4'/><stop offset='100%' stop-color='%230ea5e9'/></linearGradient></defs><rect width='300' height='300' rx='28' fill='url(%23g3)'/><g fill='none' stroke='%23fff' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'><rect x='70' y='100' width='160' height='40' rx='10' opacity='.9'/><path d='M90 120 l15 15 l20 -25'/><rect x='70' y='160' width='160' height='40' rx='10' opacity='.85'/><path d='M90 180 l15 15 l20 -25'/></g></svg>" />
+            </div>
+            <h3>Algorand Scalability</h3>
+            <p>Built for high-throughput campus needs with instant finality.</p>
+        </div>
+    </section>
+    <section class="trust fade-up delay-3" aria-label="Trust indicators">
+        <div class="row"><span class="dot"></span> Hackspiration '26 Finalist</div>
+        <div class="meta">AI Verification &nbsp;|&nbsp; Zero-Knowledge Proofs &nbsp;|&nbsp; 📊 Instant Results</div>
+    </section>
+
+    <!-- EVM Machine Container -->
+    <div class="evm-machine-container">
+
+        <!-- Main EVM Authentication Unit -->
+        <div class="evm-auth-unit">
+            <!-- EVM Header -->
+            <div class="evm-unit-header">
+                <div class="unit-info">
+                    <div class="unit-number">CAMPUS-AI-26</div>
+                    <div class="barcode">||||||||||||</div>
+                </div>
+                <div class="status-panel">
+                    <span class="ready-text">Online</span>
+                    <div class="status-light ready"></div>
+                </div>
+                <div class="unit-label">
+                    <div class="hindi-text">स्मार्ट वोटिंग</div>
+                    <div class="english-text">Smart Voting Unit</div>
+                    <div class="unit-icon">🧠</div>
+                </div>
+            </div>
+
+            <!-- Authentication Panel -->
+            <div class="auth-panel">
+                <div class="panel-header">
+                    <h2>STUDENT AUTHENTICATION</h2>
+                    <p class="instruction" id="authInstruction">Verify Identity to Proceed</p>
+                </div>
+
+                <!-- AI Video Section (Hidden by default) -->
+                <div id="video-container">
+                    <video id="webcam" autoplay muted playsinline></video>
+                    <canvas id="overlay"></canvas>
+                    <div class="ai-status" id="aiStatus">Initializing AI Vision...</div>
+                </div>
+
+                <!-- Scanner Display (Hidden by default if using AI first) -->
+                <div class="scanner-display" id="scannerDisplay" style="display:none">
+                    <div class="display-screen">
+                        <div class="screen-content">
+                            <div class="aadhaar-icon">👆</div>
+                            <p class="scan-instruction">Identity Verified. Place finger on sensor.</p>
+                            <div class="waiting-dots">
+                                <span></span><span></span><span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Control Buttons -->
+                <div class="control-panel">
+                    <button id="startAiAuth" class="evm-button primary">
+                        <span class="button-light"></span>
+                        <span class="button-text">Verify Face (AI)</span>
+                    </button>
+                    <!-- Originally scanButton, now hidden until Face Auth succeeds -->
+                    <button id="scanButton" class="evm-button primary hidden">
+                        <span class="button-light"></span>
+                        <span class="button-text">Scan Fingerprint</span>
+                    </button>
+                </div>
+
+                <!-- Status Display -->
+                <div id="statusSection" class="status-display hidden" role="status" aria-live="polite">
+                    <div class="status-content">
+                        <div class="status-spinner"></div>
+                        <p id="statusText" class="status-message">Processing...</p>
+                    </div>
+                </div>
+
+                <!-- Success Display -->
+                <div id="voterInfo" class="success-display hidden">
+                    <div class="success-content">
+                        <div class="success-icon">✅</div>
+                        <h3>AUTHENTICATION SUCCESSFUL</h3>
+                        <div class="voter-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Voter ID:</span>
+                                <span id="voterHashDisplay" class="detail-value"></span>
+                            </div>
+                        </div>
+                        <button id="proceedButton" class="evm-button success">
+                            <span class="button-light"></span>
+                            <span class="button-text">PROCEED TO BALLOT</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Error Display -->
+                <div id="errorSection" class="error-display hidden" role="alert" aria-live="assertive">
+                    <div class="error-content">
+                        <div class="error-icon">⚠️</div>
+                        <h3>VERIFICATION FAILED</h3>
+                        <p id="errorText" class="error-message"></p>
+                        <button id="retryButton" class="evm-button secondary">
+                            <span class="button-light"></span>
+                            <span class="button-text">TRY AGAIN</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Information Panel -->
+            <div class="info-panel">
+                <div class="info-item">
+                    <div class="info-icon">👁️</div>
+                    <span>AI Verified</span>
+                </div>
+                <div class="info-item">
+                    <div class="info-icon">🛡️</div>
+                    <span>Bio-Secured</span>
+                </div>
+                <div class="info-item">
+                    <div class="info-icon">⛓️</div>
+                    <span>Blockchain</span>
+                </div>
+            </div>
+
+            <div class="info-cards">
+                <div class="info-card">
+                    <div class="info-icon">🤖</div>
+                    <h3>AI Liveness</h3>
+                    <p>Advanced computer vision prevents identity spoofing.</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">⚡</div>
+                    <h3>Algorand Speed</h3>
+                    <p>High-performance consensus for instant campus-wide results.</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">🌐</div>
+                    <h3>Decentralized</h3>
+                    <p>No central authority can tamper with student votes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="evm-footer">
+        <div class="footer-content">
+            <p>Hackspiration '26 Project • CampusVote AI</p>
+            <div class="network-status">
+                <span id="networkIndicator" class="network-light"></span>
+                <span id="networkText">Algorand Testnet (Simulated)</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+    <script src="js/config.js?v=4"></script>
+    <script src="js/web3.js?v=4"></script>
+    <script src="js/auth.js?v=4"></script>
+    <script src="js/ai-auth.js"></script>
+    <script>
+        // Subtle parallax for landing background
+        (function () {
+            const bg = document.querySelector('.landing-bg');
+            if (!bg) return;
+            const onScroll = () => {
+                const y = Math.min(60, window.scrollY * 0.06);
+                bg.style.transform = `translateY(${y}px)`;
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+        })();
+
+        // Global function attached to window to ensure visibility
+        window.startVotingFlow = function () {
+            console.log("Starting voting flow...");
+            try { document.querySelector('.landing').style.display = 'none'; } catch (e) { }
+            try { document.querySelector('.cards').style.display = 'none'; } catch (e) { }
+            try { document.querySelector('.trust').style.display = 'none'; } catch (e) { }
+
+            const evm = document.querySelector('.evm-machine-container');
+            if (evm) {
+                evm.style.display = 'flex'; // Direct style override
+                evm.classList.add('active'); // Class based override
+                console.log("EVM Container Shown");
+
+                // Scroll to it
+                setTimeout(() => {
+                    evm.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            } else {
+                console.error("EVM Container not found!");
+                alert("Error: Voting Interface not loaded.");
+            }
+        };
+    </script>
+</body>
+
+</html>

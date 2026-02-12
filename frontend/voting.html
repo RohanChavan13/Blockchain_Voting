@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Voting - Cast Your Vote</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🗳️ Cast Your Vote</h1>
+            <div class="voter-status">
+                <span class="status-badge">Authenticated</span>
+                <span id="voterIdDisplay" class="voter-id"></span>
+            </div>
+        </header>
+
+        <main class="voting-container">
+            <div class="instructions glass">
+                <h2>Select Your Candidate</h2>
+                <p>Click on a candidate card to select, then confirm your vote</p>
+            </div>
+
+            <div id="candidatesGrid" class="candidates-grid">
+                <!-- Candidate cards will be dynamically inserted here -->
+            </div>
+
+            <div id="confirmDialog" class="modal hidden">
+                <div class="modal-content glass">
+                    <button class="modal-close" id="closeModal">×</button>
+                    <h2>Confirm Your Vote</h2>
+                    <div class="confirm-details">
+                        <div class="candidate-preview">
+                            <div class="candidate-symbol-large" id="confirmSymbol"></div>
+                            <h3 id="confirmName"></h3>
+                            <p id="confirmParty"></p>
+                        </div>
+                        <div class="warning-box">
+                            <p>⚠️ <strong>Important:</strong> Once submitted, your vote cannot be changed</p>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button id="cancelVote" class="btn btn-secondary">Cancel</button>
+                        <button id="confirmVote" class="btn btn-primary">Confirm Vote</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="transactionStatus" class="transaction-status hidden">
+                <div class="status-card glass">
+                    <div class="spinner-large"></div>
+                    <h3 id="txStatusTitle">Processing Transaction...</h3>
+                    <p id="txStatusMessage">Please confirm the transaction in MetaMask</p>
+                    <div id="txHashDisplay" class="tx-hash hidden">
+                        <span class="label">Transaction Hash:</span>
+                        <a id="txHashLink" href="#" target="_blank" class="mono"></a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="successSection" class="success-section hidden">
+                <div class="success-card glass">
+                    <div class="success-icon">✅</div>
+                    <h2>Vote Cast Successfully!</h2>
+                    <p>Your vote has been recorded on the blockchain</p>
+                    <div class="success-details">
+                        <div class="detail-row">
+                            <span class="label">Transaction:</span>
+                            <a id="successTxLink" href="#" target="_blank" class="value mono"></a>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Block:</span>
+                            <span id="blockNumber" class="value"></span>
+                        </div>
+                    </div>
+                    <div class="success-actions">
+                        <button id="viewReceipt" class="btn btn-primary">View Receipt</button>
+                        <button id="viewDashboard" class="btn btn-secondary">View Results</button>
+                        <button id="backToHome" class="btn btn-outline">Back to Home</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p><a href="index.html">← Back to Home</a> | <a href="dashboard.html">View Dashboard</a></p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-sha3@0.9.2/build/sha3.min.js"></script>
+    <script>
+        // Simple MerkleTree implementation for browser
+        class MerkleTree {
+            constructor(leaves, hashFn, options = {}) {
+                this.leaves = leaves;
+                this.hashFn = hashFn;
+                this.sortPairs = options.sortPairs || false;
+                this.tree = this.buildTree(leaves);
+            }
+            
+            buildTree(leaves) {
+                if (leaves.length === 0) return [];
+                let tree = [leaves];
+                while (tree[tree.length - 1].length > 1) {
+                    tree.push(this.getNextLayer(tree[tree.length - 1]));
+                }
+                return tree;
+            }
+            
+            getNextLayer(layer) {
+                let nextLayer = [];
+                for (let i = 0; i < layer.length; i += 2) {
+                    if (i + 1 === layer.length) {
+                        nextLayer.push(layer[i]);
+                    } else {
+                        let left = layer[i];
+                        let right = layer[i + 1];
+                        if (this.sortPairs && this.compare(left, right) > 0) {
+                            [left, right] = [right, left];
+                        }
+                        nextLayer.push(this.hashFn(this.concat(left, right)));
+                    }
+                }
+                return nextLayer;
+            }
+            
+            getRoot() {
+                return this.tree[this.tree.length - 1][0];
+            }
+            
+            getProof(leaf) {
+                let proof = [];
+                let index = this.leaves.findIndex(l => this.bufferEqual(l, leaf));
+                if (index === -1) return proof;
+                
+                for (let i = 0; i < this.tree.length - 1; i++) {
+                    let layer = this.tree[i];
+                    let isRightNode = index % 2;
+                    let pairIndex = isRightNode ? index - 1 : index + 1;
+                    
+                    if (pairIndex < layer.length) {
+                        proof.push({ data: layer[pairIndex], position: isRightNode ? 'left' : 'right' });
+                    }
+                    index = Math.floor(index / 2);
+                }
+                return proof;
+            }
+            
+            verify(proof, leaf, root) {
+                let hash = leaf;
+                for (let node of proof) {
+                    let buffers = node.position === 'left' ? [node.data, hash] : [hash, node.data];
+                    hash = this.hashFn(this.concat(buffers[0], buffers[1]));
+                }
+                return this.bufferEqual(hash, root);
+            }
+            
+            concat(a, b) {
+                let result = new Uint8Array(a.length + b.length);
+                result.set(a);
+                result.set(b, a.length);
+                return result;
+            }
+            
+            compare(a, b) {
+                for (let i = 0; i < Math.min(a.length, b.length); i++) {
+                    if (a[i] !== b[i]) return a[i] - b[i];
+                }
+                return a.length - b.length;
+            }
+            
+            bufferEqual(a, b) {
+                if (a.length !== b.length) return false;
+                for (let i = 0; i < a.length; i++) {
+                    if (a[i] !== b[i]) return false;
+                }
+                return true;
+            }
+        }
+        window.MerkleTree = MerkleTree;
+    </script>
+    <script src="js/config.js?v=3"></script>
+    <script src="js/web3.js?v=3"></script>
+    <script src="js/auth.js?v=3"></script>
+    <script src="js/merkle.js?v=3"></script>
+    <script src="js/voting.js?v=3"></script>
+</body>
+</html>
