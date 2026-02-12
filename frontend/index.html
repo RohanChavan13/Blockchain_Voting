@@ -369,11 +369,8 @@
                 </div>
 
                 <!-- AI Video Section (Hidden by default) -->
-                <div id="video-container">
-                    <video id="webcam" autoplay muted playsinline></video>
-                    <canvas id="overlay"></canvas>
-                    <div class="ai-status" id="aiStatus">Initializing AI Vision...</div>
-                </div>
+                <!-- AI Video Section (Removed for Algorand Version) -->
+                <!-- <div id="video-container">...</div> -->
 
                 <!-- Scanner Display (Hidden by default if using AI first) -->
                 <div class="scanner-display" id="scannerDisplay" style="display:none">
@@ -390,14 +387,9 @@
 
                 <!-- Control Buttons -->
                 <div class="control-panel">
-                    <button id="startAiAuth" class="evm-button primary">
+                    <button id="scanButton" class="evm-button primary">
                         <span class="button-light"></span>
-                        <span class="button-text">Verify Face (AI)</span>
-                    </button>
-                    <!-- Originally scanButton, now hidden until Face Auth succeeds -->
-                    <button id="scanButton" class="evm-button primary hidden">
-                        <span class="button-light"></span>
-                        <span class="button-text">Scan Fingerprint</span>
+                        <span class="button-text">Start Fingerprint Authentication</span>
                     </button>
                 </div>
 
@@ -488,11 +480,10 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
-    <script src="js/config.js?v=4"></script>
-    <script src="js/web3.js?v=4"></script>
-    <script src="js/auth.js?v=4"></script>
-    <script src="js/ai-auth.js"></script>
+    <script src="https://unpkg.com/algosdk@2.7.0/dist/browser/algosdk.min.js"></script>
+    <script src="js/config.js?v=5"></script>
+    <script src="js/algorand-manager.js?v=2"></script>
+    <script src="js/auth.js?v=5"></script>
     <script>
         // Subtle parallax for landing background
         (function () {

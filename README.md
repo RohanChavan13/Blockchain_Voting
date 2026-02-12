@@ -27,21 +27,18 @@ We solved the "Broken Sensor" problem common in hardware projects:
 
 ## 🛠️ System Architecture
 
-```mermaid
 graph TD
     User((User)) -->|Fingerprint Scan| Sensor[R307/R305 Sensor]
     Sensor -->|Raw Template| Backend[Node.js Authority]
     Backend -->|Check Membership| DB[(Secure Database)]
-    
-    subgraph "Privacy Layer"
-        Backend -->|Issue Ephemeral Key| Frontend[Web Client]
-        Frontend -->|Sign Vote (locally)| Algorand[Algorand Network]
-    end
-    
-    Algorand -->|Immutable Record| Ledger[(Blockchain)]
-```
 
----
+    subgraph Privacy_Layer
+        Backend -->|Issue Ephemeral Key| Frontend[Web Client]
+        Frontend -->|Sign Vote Locally| Algorand[Algorand Network]
+    end
+
+    Algorand -->|Immutable Record| Ledger[(Blockchain)]
+
 
 ## � Technology Stack
 
