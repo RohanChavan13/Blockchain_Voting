@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blockchain Voting - Cast Your Vote</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
     <div class="container">
         <header class="header">
@@ -88,7 +90,6 @@
         </footer>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-sha3@0.9.2/build/sha3.min.js"></script>
     <script>
         // Simple MerkleTree implementation for browser
@@ -99,7 +100,7 @@
                 this.sortPairs = options.sortPairs || false;
                 this.tree = this.buildTree(leaves);
             }
-            
+
             buildTree(leaves) {
                 if (leaves.length === 0) return [];
                 let tree = [leaves];
@@ -108,7 +109,7 @@
                 }
                 return tree;
             }
-            
+
             getNextLayer(layer) {
                 let nextLayer = [];
                 for (let i = 0; i < layer.length; i += 2) {
@@ -125,21 +126,21 @@
                 }
                 return nextLayer;
             }
-            
+
             getRoot() {
                 return this.tree[this.tree.length - 1][0];
             }
-            
+
             getProof(leaf) {
                 let proof = [];
                 let index = this.leaves.findIndex(l => this.bufferEqual(l, leaf));
                 if (index === -1) return proof;
-                
+
                 for (let i = 0; i < this.tree.length - 1; i++) {
                     let layer = this.tree[i];
                     let isRightNode = index % 2;
                     let pairIndex = isRightNode ? index - 1 : index + 1;
-                    
+
                     if (pairIndex < layer.length) {
                         proof.push({ data: layer[pairIndex], position: isRightNode ? 'left' : 'right' });
                     }
@@ -147,7 +148,7 @@
                 }
                 return proof;
             }
-            
+
             verify(proof, leaf, root) {
                 let hash = leaf;
                 for (let node of proof) {
@@ -156,21 +157,21 @@
                 }
                 return this.bufferEqual(hash, root);
             }
-            
+
             concat(a, b) {
                 let result = new Uint8Array(a.length + b.length);
                 result.set(a);
                 result.set(b, a.length);
                 return result;
             }
-            
+
             compare(a, b) {
                 for (let i = 0; i < Math.min(a.length, b.length); i++) {
                     if (a[i] !== b[i]) return a[i] - b[i];
                 }
                 return a.length - b.length;
             }
-            
+
             bufferEqual(a, b) {
                 if (a.length !== b.length) return false;
                 for (let i = 0; i < a.length; i++) {
@@ -182,9 +183,12 @@
         window.MerkleTree = MerkleTree;
     </script>
     <script src="js/config.js?v=3"></script>
-    <script src="js/web3.js?v=3"></script>
+    <script src="https://unpkg.com/algosdk@2.7.0/dist/browser/algosdk.min.js"></script>
+    <script src="js/config.js?v=4"></script>
+    <script src="js/algorand-manager.js?v=1"></script>
     <script src="js/auth.js?v=3"></script>
     <script src="js/merkle.js?v=3"></script>
     <script src="js/voting.js?v=3"></script>
 </body>
+
 </html>

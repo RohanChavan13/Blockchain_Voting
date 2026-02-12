@@ -1,4 +1,4 @@
-// Voting interface - WORKING VERSION
+// Voting interface - Algorand Integration
 
 let selectedCandidate = null;
 let voterSession = null;
@@ -11,17 +11,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     isInitialized = true;
-    // Connect MetaMask first
-    if (!web3Manager.isMetaMaskInstalled()) {
-        alert('MetaMask not installed!');
-        return;
-    }
 
+    // Connect to Algorand Node
     try {
-        await web3Manager.connectWallet();
-        console.log('MetaMask connected to voting page');
+        await algorandManager.init();
+        console.log('Algorand Node connected');
     } catch (error) {
-        alert('Please connect MetaMask: ' + error.message);
+        alert('Failed to connect to Algorand Network: ' + error.message);
         return;
     }
 
@@ -29,6 +25,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     voterSession = authManager.getSessionData();
     if (!voterSession) {
         alert('Please authenticate first');
+        window.location.href = 'index.html';
+        return;
+    }
+
+    // Check for Ephemeral Key
+    if (!voterSession.ephemeralAccount || !voterSession.ephemeralAccount.mnemonic) {
+        console.warn('⚠️ No ephemeral key found in session.');
+        alert('Security Error: No voting token found. Please re-authenticate.');
         window.location.href = 'index.html';
         return;
     }
@@ -55,17 +59,19 @@ function renderCandidates() {
             <p class="candidate-description">${candidate.description}</p>
             <button class="btn btn-primary">Select</button>
         `;
-        card.addEventListener('click', () => selectCandidate(candidate));
+        card.addEventListener('click', (e) => selectCandidate(candidate, e));
         grid.appendChild(card);
     });
 }
 
-function selectCandidate(candidate) {
+function selectCandidate(candidate, event) {
     selectedCandidate = candidate;
     document.querySelectorAll('.candidate-card').forEach(card => {
         card.classList.remove('selected');
     });
-    event.currentTarget.classList.add('selected');
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add('selected');
+    }
     showConfirmDialog(candidate);
 }
 
@@ -92,92 +98,69 @@ document.getElementById('confirmVote').addEventListener('click', async () => {
         document.getElementById('confirmDialog').classList.add('hidden');
         const txStatus = document.getElementById('transactionStatus');
         txStatus.classList.remove('hidden');
-        
-        document.getElementById('txStatusTitle').textContent = 'Preparing Vote...';
-        document.getElementById('txStatusMessage').textContent = 'Building Merkle proof...';
 
-        // Get contract first
-        const contract = web3Manager.getContract();
-        if (!contract) {
-            throw new Error('Contract not initialized');
-        }
+        document.getElementById('txStatusTitle').textContent = 'Submitting Vote...';
+        document.getElementById('txStatusMessage').textContent = 'Signing transaction with ephemeral key...';
 
-        // SIMPLIFIED: Use empty proof (contract root is 0x000...000)
-        // This means we're voting without Merkle verification (demo mode)
-        const proof = [];
-        const emptyLeaf = "0x" + "0".repeat(64);
-        
-        console.log('Using demo mode (no Merkle verification)');
+        // --- ALGOREND VOTE SUBMISSION ---
+        const mnemonic = voterSession.ephemeralAccount.mnemonic;
 
-        document.getElementById('txStatusMessage').textContent = 'Please confirm in MetaMask...';
+        console.log(`🗳️ Casting vote for Candidate ${selectedCandidate.id} (${selectedCandidate.name})`);
 
-        const tx = await contract.vote(
+        const result = await algorandManager.submitVote(
+            mnemonic,
             selectedCandidate.id,
-            voterSession.nullifierHash,
-            emptyLeaf,
-            proof,
-            { gasLimit: 300000 }
+            voterSession.nullifierHash
         );
 
-        document.getElementById('txStatusTitle').textContent = 'Transaction Submitted';
-        document.getElementById('txStatusMessage').textContent = 'Waiting for confirmation...';
+        document.getElementById('txStatusTitle').textContent = 'Vote Confirmed!';
+        document.getElementById('txStatusMessage').textContent = `Confirmed in Round ${result.round}`;
         document.getElementById('txHashDisplay').classList.remove('hidden');
-        document.getElementById('txHashLink').href = web3Manager.getEtherscanLink(tx.hash);
-        document.getElementById('txHashLink').textContent = authManager.truncateHash(tx.hash, 12, 10);
 
-        const receipt = await tx.wait();
+        const explorerLink = algorandManager.getExplorerLink(result.txId);
+        const linkElem = document.getElementById('txHashLink');
+        linkElem.href = explorerLink;
+        linkElem.textContent = authManager.truncateHash(result.txId, 12, 10);
 
-        showSuccess(tx.hash, receipt.blockNumber);
+        // Wait for admin sync before clearing
+        await showSuccess(result.txId, result.round, voterSession);
+
+        // Clear sensitive key from memory/storage immediately
         authManager.clearSession();
 
     } catch (error) {
         console.error('Voting error:', error);
         document.getElementById('transactionStatus').classList.add('hidden');
-        
-        let msg = 'Failed to cast vote. ';
-        if (error.code === 'ACTION_REJECTED') {
-            msg += 'Transaction rejected.';
-        } else if (error.message.includes('already voted')) {
-            msg += 'Already voted.';
-        } else {
-            msg += error.message;
-        }
+
+        let msg = 'Failed to cast vote. ' + error.message;
         alert(msg);
     }
 });
 
-async function showSuccess(txHash, blockNum) {
+async function showSuccess(txHash, blockNum, session) {
     document.getElementById('transactionStatus').classList.add('hidden');
     const success = document.getElementById('successSection');
     success.classList.remove('hidden');
-    
-    document.getElementById('successTxLink').href = web3Manager.getEtherscanLink(txHash);
+
+    document.getElementById('successTxLink').href = algorandManager.getExplorerLink(txHash);
     document.getElementById('successTxLink').textContent = authManager.truncateHash(txHash, 12, 10);
     document.getElementById('blockNumber').textContent = blockNum.toString();
 
     // Mark voter as voted in backend to prevent double voting
     try {
-        const voterSession = authManager.getSessionData();
-        if (voterSession && voterSession.voterHash) {
+        if (session && session.voterHash) {
             const response = await fetch('http://localhost:3001/api/mark-voted', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    voterHash: voterSession.voterHash,
+                    voterHash: session.voterHash,
                     txHash: txHash
                 })
             });
-            
-            if (response.ok) {
-                console.log('✅ Voter marked as voted in backend');
-                // Clear session after successful vote to prevent reuse
-                authManager.clearSession();
-            } else {
-                console.warn('⚠️ Failed to mark voter as voted in backend');
-            }
+            if (response.ok) console.log('✅ Backend marked as voted');
         }
     } catch (error) {
-        console.error('Error marking voter as voted:', error);
+        console.error('Error marking backend:', error);
     }
 
     sessionStorage.setItem('voteReceipt', JSON.stringify({
@@ -198,7 +181,6 @@ document.getElementById('viewDashboard').addEventListener('click', () => {
 });
 
 document.getElementById('backToHome').addEventListener('click', () => {
-    // Clear session data to allow new voter
     authManager.clearSession();
     window.location.href = 'index.html';
 });

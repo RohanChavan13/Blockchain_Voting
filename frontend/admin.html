@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting Admin Panel</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .admin-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #aaa;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: white;
+        }
+
+        .status-box {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            min-height: 50px;
+            font-family: monospace;
+        }
+
+        .scanning {
+            border: 2px solid #00ff88;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(0, 255, 136, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 255, 136, 0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🛠️ Voting Admin Panel</h1>
+            <div class="header-actions">
+                <a href="dashboard.html" class="btn btn-secondary">View Dashboard</a>
+                <div id="connectionStatus" class="status-indicator disconnected">Disconnected</div>
+            </div>
+        </header>
+
+        <main class="dashboard-container">
+
+            <!-- Link Fingerprint Section (Priority) -->
+            <section class="admin-section">
+                <h2>🔗 Link Fingerprint to User</h2>
+                <p>Select a user and scan their finger to link the sensor ID to their account.</p>
+                <div class="form-group">
+                    <label>Select User:</label>
+                    <select id="linkUserSelect">
+                        <option value="">Loading users...</option>
+                    </select>
+                </div>
+                <button id="startScanBtn" class="btn btn-primary">Start Scanning</button>
+                <div id="scanStatus" class="status-box">Waiting to start...</div>
+            </section>
+
+            <div class="admin-grid">
+                <!-- Create User -->
+                <section class="admin-section">
+                    <h3>👤 Create New User</h3>
+                    <form id="createUserForm">
+                        <div class="form-group">
+                            <label>User ID (Unique):</label>
+                            <input type="text" id="newUserId" placeholder="e.g. u123456" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Full Name:</label>
+                            <input type="text" id="newUserName" placeholder="e.g. John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email:</label>
+                            <input type="email" id="newUserEmail" placeholder="e.g. john@college.edu">
+                        </div>
+                        <button type="submit" class="btn">Create User</button>
+                    </form>
+                </section>
+
+                <!-- Create Club -->
+                <section class="admin-section">
+                    <h3>🏫 Create New Club</h3>
+                    <form id="createClubForm">
+                        <div class="form-group">
+                            <label>Club ID (Unique):</label>
+                            <input type="text" id="newClubId" placeholder="e.g. coding-club" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Club Name:</label>
+                            <input type="text" id="newClubName" placeholder="e.g. Coding Club" required>
+                        </div>
+                        <button type="submit" class="btn">Create Club</button>
+                    </form>
+                </section>
+
+                <!-- Club Membership -->
+                <section class="admin-section">
+                    <h3>➕ Add User to Club</h3>
+                    <form id="joinClubForm">
+                        <div class="form-group">
+                            <label>User:</label>
+                            <input type="text" id="joinUserId" placeholder="User ID" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Club:</label>
+                            <input type="text" id="joinClubId" placeholder="Club ID" required>
+                        </div>
+                        <button type="submit" class="btn">Add Membership</button>
+                    </form>
+                </section>
+
+                <!-- Start Election -->
+                <section class="admin-section">
+                    <h3>🗳️ Start Election</h3>
+                    <form id="startElectionForm">
+                        <div class="form-group">
+                            <label>Club to Vote For:</label>
+                            <input type="text" id="electionClubId" placeholder="Club ID" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Election Name:</label>
+                            <input type="text" id="electionName" placeholder="e.g. President 2026" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Election ID:</label>
+                            <input type="text" id="electionId" placeholder="e.g. elec-001" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Start Election</button>
+                    </form>
+                </section>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+
+</html>
