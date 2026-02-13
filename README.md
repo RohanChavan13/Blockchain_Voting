@@ -92,19 +92,13 @@ We provide a one-click startup script:
 
 ## 🧪 How to Demo (Judge's Guide)
 
-### Scenario A: With Hardware (Fingerprint Sensor)
+With Hardware (Fingerprint Sensor)
 1.  Connect the R305/R307 sensor via USB-TTL.
 2.  Run the backend. It will auto-detect the COM port.
 3.  Go to **Frontend**. Click **"Scan Fingerprint"**.
 4.  Place finger on sensor.
 5.  **Backend** verifies -> **Frontend** receives "Ephemeral Key".
 6.  User selects candidate -> Signs Vote -> **Blockchain Confirmed**.
-
-### Scenario B: Without Hardware (Simulation Mode)
-1.  Open the **Frontend**.
-2.  Open Browser Console (`F12`).
-3.  We have a simulation endpoint. Click "Scan", then verify the backend logs to see the mock flow:
-    *   *The system will simulate a valid fingerprint match if hardware is missing but simulation is enabled in `server.js`.*
 
 ---
 
